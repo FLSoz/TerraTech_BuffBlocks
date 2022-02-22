@@ -8,7 +8,7 @@ using System.Reflection;
 
 namespace FFW_TT_BuffBlock
 {
-    class ModuleBuffWrapperMk2 : Module
+    internal class ModuleBuffWrapperMk2 : Module
     {
         private void OnAttach()
         {

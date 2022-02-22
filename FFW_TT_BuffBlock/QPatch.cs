@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Nuterra.BlockInjector;
 using UnityEngine;
 
 namespace FFW_TT_BuffBlock
@@ -10,8 +9,23 @@ namespace FFW_TT_BuffBlock
     {
         public static void Main()
         {
-            Harmony harmonyInstance = new Harmony("ffw.ttmm.buffblock.mod");
-            harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+            BuffBlocks.harmony.PatchAll(Assembly.GetExecutingAssembly());
+        }
+    }
+
+    public class BuffBlocks : ModBase
+    {
+        const string HarmonyID = "ffw.ttmm.buffblock.mod";
+        internal static Harmony harmony = new Harmony(HarmonyID);
+
+        public override void DeInit()
+        {
+            harmony.UnpatchAll(HarmonyID);
+        }
+
+        public override void Init()
+        {
+            QPatch.Main();
         }
     }
 }
