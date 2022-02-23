@@ -32,16 +32,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\TerraTechWin64_Data\Managed\0Harmony.dll</HintPath>
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\TerraTechWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="BlockInjector">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\QMods\Nuterra.BlockInjector\BlockInjector.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="DebugWrapper">
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\DebugWrapper.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,15 +51,15 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\TerraTechWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\TerraTechWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>E:\Program Files\SteamLibrary\steamapps\common\TerraTech Beta\TerraTechWin64_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>..\..\..\..\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -77,4 +76,44 @@
     <Compile Include="Mk2\ModuleBuffMk2.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>del *.pdb
+@setlocal enableextensions enabledelayedexpansion
+
+set modname=Buff Blocks
+set modpath="E:\Steam\steamapps\common\TerraTech\LocalMods\%25modname%25\"
+set unitypath="E:\Documents\Unity\Projects\TT Modding\Assets\Mods\%25modname%25\"
+echo !modpath!
+
+for %25%25I in (*) do (
+  if not "%25%25I" =="$(TargetFileName)" (
+    if not "%25%25I" == "LogManager.dll" (
+      del "%25%25I"
+    )
+  )
+)
+
+if not exist !modpath! (
+echo Creating mod folder
+mkdir !modpath!
+)
+
+set e=$(TargetDir)..\&gt;nul
+
+echo Copying to game
+xcopy /S /Y /R "$(TargetFileName)" !modpath!
+if not "$(TargetFileName)" == "LogManager.dll" (
+  xcopy /S /Y /R "LogManager.dll" !modpath!
+)
+
+echo Copying to Unity
+xcopy /S /Y /R "$(TargetFileName)" !unitypath!
+if not "$(TargetFileName)" == "LogManager.dll" (
+  xcopy /S /Y /R "LogManager.dll" !unitypath!
+)
+
+if not "$(TargetFileName)" == "LogManager.dll" (
+  del "LogManager.dll"
+)</PostBuildEvent>
+  </PropertyGroup>
 </Project>
