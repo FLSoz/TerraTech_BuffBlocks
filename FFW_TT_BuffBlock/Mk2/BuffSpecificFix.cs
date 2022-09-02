@@ -22,7 +22,7 @@ namespace FFW_TT_BuffBlock
                 .GetField("attachedID", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             FieldInfo field_WheelState = typeof(ManWheels)
                 .GetField("m_WheelState", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            Console.WriteLine("FFW! Update Wheels. Count: " + blockList.Count);
+            BuffBlocks.logger.Trace("FFW! Update Wheels. Count: " + blockList.Count);
             foreach (TankBlock block in blockList)
             {
                 ModuleWheels wheels = block.GetComponent<ModuleWheels>();

@@ -77,7 +77,7 @@ namespace FFW_TT_BuffBlock
                 tank = objTank
             };
             BuffControllerMk2.AddController(objTank, newController);
-            Console.WriteLine("FFW: Active BuffControlsMk2: " + BuffControllerMk2.allControllers.Count);
+            BuffBlocks.logger.Trace("FFW: Active BuffControlsMk2: " + BuffControllerMk2.allControllers.Count);
             return newController;
         }
 
@@ -106,7 +106,7 @@ namespace FFW_TT_BuffBlock
                     if (!typeToBlock.ContainsKey(component))
                     {
                         typeToBlock.Add(component, new List<TankBlock>());
-                        Console.WriteLine("FFW! Added typeToBlock => " + component.Name);
+                        BuffBlocks.logger.Trace("FFW! Added typeToBlock => " + component.Name);
                         foreach (TankBlock block in this.allBlocks)
                         {
                             object blockComponent = block.GetComponent(component);
@@ -115,7 +115,7 @@ namespace FFW_TT_BuffBlock
                                 if (!this.typeToBlock[component].Contains(block))
                                 {
                                     this.typeToBlock[component].Add(block);
-                                    Console.WriteLine("FFW! +Reg => " + block.name + " => " + component.Name);
+                                    BuffBlocks.logger.Trace("FFW! +Reg => " + block.name + " => " + component.Name);
                                 }
                             }
                         }
@@ -130,7 +130,7 @@ namespace FFW_TT_BuffBlock
                             effectPath = restOfPath
                         };
                         this.pathToSegment.Add(path, segment);
-                        Console.WriteLine("FFW! Added pathToSegment => " + path);
+                        BuffBlocks.logger.Trace("FFW! Added pathToSegment => " + path);
                         pathToSegment[path].ManipulateObj(this.typeToBlock[component], "SAVE");
                         if (path == "ModuleWeaponGun.m_ShotCooldown")
                         {
@@ -138,12 +138,12 @@ namespace FFW_TT_BuffBlock
                         }
                     }
                     pathToSegment[path].AddBuff(buff, i);
-                    Console.WriteLine("FFW! Added buff to Segment => " + path);
+                    BuffBlocks.logger.Trace("FFW! Added buff to Segment => " + path);
                     pathToSegment[path].ManipulateObj(this.typeToBlock[component], "UPDATE");
                 }
                 else
                 {
-                    Console.WriteLine("FFW! AddBuff! Type " + splitPath[0] + " doesn't exist.");
+                    BuffBlocks.logger.Trace("FFW! AddBuff! Type " + splitPath[0] + " doesn't exist.");
                 }
             }
             if (affectedModules.Contains("ModuleWeaponGun") && pathToSegment.ContainsKey("ModuleWeaponGun.m_ShotCooldown"))
@@ -169,12 +169,12 @@ namespace FFW_TT_BuffBlock
                 {
                     affectedModules.Add(splitPath[0]);
                     pathToSegment[path].RemoveBuff(buff);
-                    Console.WriteLine("FFW! Removed buff from Segment => " + path);
+                    BuffBlocks.logger.Trace("FFW! Removed buff from Segment => " + path);
                     pathToSegment[path].ManipulateObj(this.typeToBlock[component], "UPDATE");
                 }
                 else
                 {
-                    Console.WriteLine("FFW! RemoveBuff! Type " + splitPath[0] + " doesn't exist.");
+                    BuffBlocks.logger.Trace("FFW! RemoveBuff! Type " + splitPath[0] + " doesn't exist.");
                 }
             }
             if (affectedModules.Contains("ModuleWeaponGun") && pathToSegment.ContainsKey("ModuleWeaponGun.m_ShotCooldown"))
@@ -200,7 +200,7 @@ namespace FFW_TT_BuffBlock
                     if (!this.typeToBlock[component].Contains(block))
                     {
                         this.typeToBlock[component].Add(block);
-                        Console.WriteLine("FFW! +Reg => " + block.name + " => " + component.Name);
+                        BuffBlocks.logger.Trace("FFW! +Reg => " + block.name + " => " + component.Name);
                     }
                     segPair.Value.ManipulateObj(new List<TankBlock> { block }, "SAVE");
                     if (segPair.Key == "ModuleWeaponGun.m_ShotCooldown")
@@ -228,7 +228,7 @@ namespace FFW_TT_BuffBlock
                     if (this.typeToBlock[component].Contains(block))
                     {
                         this.typeToBlock[component].Remove(block);
-                        Console.WriteLine("FFW! -Reg => " + block.name + " => " + segPair.Key);
+                        BuffBlocks.logger.Trace("FFW! -Reg => " + block.name + " => " + segPair.Key);
                     }
                     segPair.Value.ManipulateObj(new List<TankBlock> { block }, "CLEAN");
                     if (segPair.Key == "ModuleWeaponGun.m_ShotCooldown")

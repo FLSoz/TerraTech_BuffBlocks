@@ -23,15 +23,15 @@ namespace FFW_TT_BuffBlock
         {
             foreach (TankBlock block in blockPool)
             {
-                Console.WriteLine("FFW! Manipulate Obj " + request + "... 1 ");
+                BuffBlocks.logger.Trace("FFW! Manipulate Obj " + request + "... 1 ");
                 /*if (request == "SAVE" && this.effectMemory.ContainsKey(block))
                 {
-                    Console.WriteLine("Aborting " + request + "! effectMemory already contains " + block.name);
+                    BuffBlocks.logger.Trace("Aborting " + request + "! effectMemory already contains " + block.name);
                     return;
                 }
                 if ((request == "UPDATE" || request == "CLEAN") && !this.effectMemory.ContainsKey(block))
                 {
-                    Console.WriteLine("Aborting " + request + "! effectMemory doesn't contain " + block.name);
+                    BuffBlocks.logger.Trace("Aborting " + request + "! effectMemory doesn't contain " + block.name);
                     return;
                 }*/
                 object tgt = block.GetComponent(effectComponent);
@@ -140,7 +140,7 @@ namespace FFW_TT_BuffBlock
                         else if (request == "UPDATE")
                         {
                             //Console.Write("14 ");
-                            //Console.WriteLine("FFW! Update From " + field_thisIter.GetValue(ara));
+                            //BuffBlocks.logger.Trace("FFW! Update From " + field_thisIter.GetValue(ara));
                             if (value_thisIter.GetType() == typeof(float))
                             {
                                 field_thisIter.SetValue(ara, this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name));
@@ -153,12 +153,12 @@ namespace FFW_TT_BuffBlock
                             {
                                 field_thisIter.SetValue(ara, Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name), 0.0f, 1.0f))));
                             }
-                            //Console.WriteLine("FFW! Update To " + field_thisIter.GetValue(ara));
+                            //BuffBlocks.logger.Trace("FFW! Update To " + field_thisIter.GetValue(ara));
                         }
                         else if (request == "CLEAN")
                         {
                             //Console.Write("15 ");
-                            //Console.WriteLine("FFW! Clean From " + field_thisIter.GetValue(ara));
+                            //BuffBlocks.logger.Trace("FFW! Clean From " + field_thisIter.GetValue(ara));
                             if (value_thisIter.GetType() == typeof(float))
                             {
                                 field_thisIter.SetValue(ara, this.effectMemory[block]);
@@ -171,7 +171,7 @@ namespace FFW_TT_BuffBlock
                             {
                                 field_thisIter.SetValue(ara, Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block], 0.0f, 1.0f))));
                             }
-                            //Console.WriteLine("FFW! Clean To " + field_thisIter.GetValue(ara));
+                            //BuffBlocks.logger.Trace("FFW! Clean To " + field_thisIter.GetValue(ara));
                         }
                     }
                 }
@@ -225,7 +225,7 @@ namespace FFW_TT_BuffBlock
             /*List<float> allAdds = new List<float>();
             foreach (KeyValuePair<ModuleBuffMk2, int> buffKvp in this.effectBuffBlocks)
             {
-                //Console.WriteLine("FFW! Find me! ");
+                //BuffBlocks.logger.Trace("FFW! Find me! ");
                 foreach (string x in buffKvp.Key.m_AffectedBlockList)
                 {
                     /*foreach (string y in x)

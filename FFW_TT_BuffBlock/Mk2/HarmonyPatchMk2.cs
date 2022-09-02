@@ -21,7 +21,7 @@ namespace FFW_TT_BuffBlock
                 var codes = new List<CodeInstruction>(instructions);
 
                 codes = codes.Skip(2).ToList();
-                Console.WriteLine("FFW: Transpiled ManWheels.Wheel.UpdateAttachData()");
+                BuffBlocks.logger.Trace("FFW: Transpiled ManWheels.Wheel.UpdateAttachData()");
                 return codes;
             }
         }

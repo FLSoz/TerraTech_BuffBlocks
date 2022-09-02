@@ -64,6 +64,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Logger.cs" />
     <Compile Include="Mk2\BuffControllerMk2.cs" />
     <Compile Include="Mk2\BuffSegmentMk2.cs" />
     <Compile Include="Mk2\BuffSpecificFix.cs" />

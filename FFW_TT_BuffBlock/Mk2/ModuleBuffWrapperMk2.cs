@@ -15,13 +15,13 @@ namespace FFW_TT_BuffBlock
             /*ModuleWeaponGun guntest = base.block.GetComponent<ModuleWeaponGun>();
             if (guntest)
             {
-                Console.WriteLine("Successfully got gun");
+                BuffBlocks.logger.Trace("Successfully got gun");
             }*/
 
             /*TankBlock blocktest = ManSpawn.inst.GetBlockPrefab((BlockTypes)block.visible.ItemType);
             if (blocktest.name == pointer.name)
             {
-                Console.WriteLine("Successfully got prefab");
+                BuffBlocks.logger.Trace("Successfully got prefab");
             }*/
             BuffControllerMk2 buff = BuffControllerMk2.MakeNewIfNone(this.block.tank);
             buff.AddBlock(pointer);
