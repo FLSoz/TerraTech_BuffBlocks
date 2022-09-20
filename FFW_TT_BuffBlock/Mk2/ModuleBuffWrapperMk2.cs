@@ -38,8 +38,8 @@ namespace FFW_TT_BuffBlock
         {
             FieldInfo field_Block = typeof(Module).GetField("_block", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
             field_Block.SetValue(this, pointer);
-            base.block.AttachEvent.Subscribe(new Action(this.OnAttach));
-            base.block.DetachEvent.Subscribe(new Action(this.OnDetach));
+            base.block.AttachedEvent.Subscribe(new Action(this.OnAttach));
+            base.block.DetachedEvent.Subscribe(new Action(this.OnDetach));
         }
 
         [SerializeField]

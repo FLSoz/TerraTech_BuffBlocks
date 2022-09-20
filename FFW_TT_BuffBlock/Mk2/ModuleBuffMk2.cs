@@ -78,8 +78,8 @@ namespace FFW_TT_BuffBlock
             {
                 this.m_AffectedBlockListType = this.m_BuffPath.Select(x => "black").ToArray();
             }
-            base.block.AttachEvent.Subscribe(new Action(this.OnAttach));
-            base.block.DetachEvent.Subscribe(new Action(this.OnDetach));
+            base.block.AttachedEvent.Subscribe(new Action(this.OnAttach));
+            base.block.DetachedEvent.Subscribe(new Action(this.OnDetach));
         }
 
         [SerializeField]
