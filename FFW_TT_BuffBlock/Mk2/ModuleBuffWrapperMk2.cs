@@ -12,37 +12,24 @@ namespace FFW_TT_BuffBlock
     {
         private void OnAttach()
         {
-            /*ModuleWeaponGun guntest = base.block.GetComponent<ModuleWeaponGun>();
-            if (guntest)
-            {
-                BuffBlocks.logger.Trace("Successfully got gun");
-            }*/
-
-            /*TankBlock blocktest = ManSpawn.inst.GetBlockPrefab((BlockTypes)block.visible.ItemType);
-            if (blocktest.name == pointer.name)
-            {
-                BuffBlocks.logger.Trace("Successfully got prefab");
-            }*/
             BuffControllerMk2 buff = BuffControllerMk2.MakeNewIfNone(this.block.tank);
-            buff.AddBlock(pointer);
+            buff.AddBlock(base.block);
         }
 
         private void OnDetach()
         {
             BuffControllerMk2 buff = BuffControllerMk2.MakeNewIfNone(this.block.tank);
-            buff.RemoveBlock(pointer);
-
+            buff.RemoveBlock(base.block);
         }
 
-        public void Init()
+        private void OnPool()
         {
-            FieldInfo field_Block = typeof(Module).GetField("_block", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
-            field_Block.SetValue(this, pointer);
             base.block.AttachedEvent.Subscribe(new Action(this.OnAttach));
             base.block.DetachingEvent.Subscribe(new Action(this.OnDetach));
         }
 
-        [SerializeField]
-        public TankBlock pointer;
+        internal void PrintDetails() {
+            BuffBlocks.logger.Debug($"Added ModuleBuffWrapperMk2 to block {base.block.name}");
+        }
     }
 }

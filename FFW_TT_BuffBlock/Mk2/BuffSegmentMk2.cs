@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using System.Reflection;
+using UnityEngine.Serialization;
+using static SeekingProjectile;
+using System.Xml.Linq;
 
 namespace FFW_TT_BuffBlock
 {
@@ -18,6 +21,102 @@ namespace FFW_TT_BuffBlock
 
         public Dictionary<ModuleBuffMk2, int> effectBuffBlocks = new Dictionary<ModuleBuffMk2, int>();
         public Dictionary<object, float> effectMemory = new Dictionary<object, float>();
+
+        private static MemberInfo GetMemberWithName(Type targetType, string name)
+        {
+            BindingFlags instanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            MemberInfo[] members = targetType.GetMembers(instanceFlags);
+            foreach (MemberInfo member in members)
+            {
+                if (member.Name == name)
+                {
+                    return member;
+                }
+                object[] attributes = member.GetCustomAttributes(typeof(FormerlySerializedAsAttribute), true);
+                foreach (object attribute in attributes)
+                {
+                    if (attribute is FormerlySerializedAsAttribute formerlySerializedAs && formerlySerializedAs.oldName == name)
+                    {
+                        BuffBlocks.logger.Warn($"🚨 Property '{name}' on type '{targetType}' has been renamed to '{member.Name}'");
+                        return member;
+                    }
+                }
+            }
+            return null;
+        }
+
+        private static object GetValue(MemberInfo member, object instance)
+        {
+            object value = null;
+            Type memberType = null;
+            try
+            {
+                if (member.MemberType == MemberTypes.Property && member is PropertyInfo property)
+                {
+                    memberType = property.PropertyType;
+                    if (property.CanRead)
+                    {
+                        value = property.GetValue(instance);
+                        BuffBlocks.logger.Trace($"✔️ Got value of property {property.Name} as {value}");
+                    }
+                    else
+                    {
+                        BuffBlocks.logger.Error($"❌ Trying to get value of writeonly property {property.Name}");
+                    }
+                }
+                else if (member.MemberType == MemberTypes.Field && member is FieldInfo field)
+                {
+                    member = field.FieldType;
+                    value = field.GetValue(instance);
+                    BuffBlocks.logger.Trace($"✔️ Got value of field {field.Name} as {value}");
+                }
+                else
+                {
+                    BuffBlocks.logger.Error($"❌ Trying to get value of non-gettable member {member.Name}");
+                }
+            }
+            catch (Exception e)
+            {
+                BuffBlocks.logger.Error($"🛑 EXCEPTION WHEN GETTING VALUE");
+                BuffBlocks.logger.Error(e);
+            }
+            if (value == null && memberType != null && memberType.IsValueType)
+            {
+                BuffBlocks.logger.Warn($"🚨 Using System.Activator because failed to get value somehow");
+                value = Activator.CreateInstance(memberType);
+            }
+            return value;
+        }
+
+        private static void SetValue(MemberInfo member, object instance, object value)
+        {
+            try {
+                if (member.MemberType == MemberTypes.Property && member is PropertyInfo property) {
+                    if (property.CanWrite)
+                    {
+                        property.SetValue(instance, value);
+                        BuffBlocks.logger.Trace($"✔️ Set value of property {property.Name} to {value}");
+                    }
+                    else
+                    {
+                        BuffBlocks.logger.Error($"❌ Trying to set value of readonly property {property.Name}");
+                    }
+                }
+                else if (member.MemberType == MemberTypes.Field && member is FieldInfo field) {
+                    field.SetValue(instance, value);
+                    BuffBlocks.logger.Trace($"✔️ Set value of field {field.Name} to {value}");
+                }
+                else
+                {
+                    BuffBlocks.logger.Error($"❌ Trying to set value of non-settable member {member.Name}");
+                }
+            }
+            catch (Exception e)
+            {
+                BuffBlocks.logger.Error($"🛑 EXCEPTION WHEN SETTING VALUE");
+                BuffBlocks.logger.Error(e);
+            }
+        }
 
         public void ManipulateObj(List<TankBlock> blockPool, string request)
         {
@@ -41,34 +140,30 @@ namespace FFW_TT_BuffBlock
                 }
                 if (request == "SAVE")
                 {
-                    //Console.Write("2 ");
                     this.effectMemory.Add(block, 1.0f);
                 }
 
                 List<object> lastIterObjs = null;
                 List<object> thisIterObjs = new List<object> { tgt };
 
-                FieldInfo field_lastIter = null;
-                FieldInfo field_thisIter = null;
+                MemberInfo member_lastIter = null;
+                MemberInfo member_ThisIter = null;
 
                 object structWarningObj = null;
                 object structWarningParent = null;
-                FieldInfo structWarningField = null;
+                MemberInfo structWarningMember = null;
 
                 foreach (string e in this.effectPath)
                 {
-                    //Console.Write("3 ");
-                    field_lastIter = field_thisIter;
+                    member_lastIter = member_ThisIter;
                     lastIterObjs = new List<object>(thisIterObjs);
                     thisIterObjs = new List<object>();
                     foreach (object obj in lastIterObjs)
                     {
-                        //Console.Write("4 ");
-                        field_thisIter = obj.GetType().GetField(e, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                        if (field_thisIter != null)
+                        member_ThisIter = GetMemberWithName(obj.GetType(), e);
+                        if (member_ThisIter != null)
                         {
-                            //Console.Write("5 ");
-                            object value_thisIter = field_thisIter.GetValue(obj);
+                            object value_thisIter =  GetValue(member_ThisIter, obj);
                             if (value_thisIter != null)
                             {
                                 var arrayTest = value_thisIter as Array;
@@ -76,15 +171,13 @@ namespace FFW_TT_BuffBlock
                                 Boolean isStruct = value_thisIter.GetType().IsValueType && !value_thisIter.GetType().IsPrimitive;
                                 if (isStruct)
                                 {
-                                    //Console.Write("6 ");
                                     structWarningObj = value_thisIter;
                                     structWarningParent = obj;
-                                    structWarningField = field_thisIter;
+                                    structWarningMember = member_ThisIter;
                                     thisIterObjs.Add(structWarningObj);
                                 }
                                 else if (arrayTest != null)
                                 {
-                                    //Console.Write("7 ");
                                     Array value_thisIterCasted = (Array)value_thisIter;
                                     foreach (object element in value_thisIterCasted)
                                     {
@@ -93,7 +186,6 @@ namespace FFW_TT_BuffBlock
                                 }
                                 else if (listTest != null)
                                 {
-                                    //Console.Write("8 ");
                                     System.Collections.IList value_thisIterCasted = (System.Collections.IList)value_thisIter;
                                     foreach (object element in value_thisIterCasted)
                                     {
@@ -102,7 +194,6 @@ namespace FFW_TT_BuffBlock
                                 }
                                 else
                                 {
-                                    //Console.Write("9 ");
                                     thisIterObjs.Add(value_thisIter);
                                 }
                             }
@@ -110,68 +201,63 @@ namespace FFW_TT_BuffBlock
                     }
                 }
 
-                //Console.Write("10 ");
                 foreach (object ara in lastIterObjs)
                 {
-                    //Console.Write("11 ");
-                    if (field_thisIter != null)
+                    if (member_ThisIter != null)
                     {
-                        //Console.Write("12 ");
-                        object value_thisIter = field_thisIter.GetValue(ara);
+                        object value_thisIter =  GetValue(member_ThisIter, ara);
                         if (request == "SAVE")
                         {
-                            //Console.Write("13 ");
                             if (value_thisIter.GetType() == typeof(float))
                             {
-                                //this.effectMemory.Add(block, (float)value_thisIter);
                                 this.effectMemory[block] = (float)value_thisIter;
                             }
                             else if (value_thisIter.GetType() == typeof(int))
                             {
-                                //this.effectMemory.Add(block, Convert.ToSingle((int)value_thisIter));
                                 this.effectMemory[block] = Convert.ToSingle((int)value_thisIter);
                             }
                             else if (value_thisIter.GetType() == typeof(bool))
                             {
-                                //this.effectMemory.Add(block, Convert.ToSingle((bool)value_thisIter));
                                 this.effectMemory[block] = Convert.ToSingle((bool)value_thisIter);
                             }
                         }
                         else if (request == "UPDATE")
                         {
-                            //Console.Write("14 ");
-                            //BuffBlocks.logger.Trace("FFW! Update From " + field_thisIter.GetValue(ara));
+                            BuffBlocks.logger.Trace("FFW! Update From " +  GetValue(member_ThisIter, ara));
                             if (value_thisIter.GetType() == typeof(float))
                             {
-                                field_thisIter.SetValue(ara, this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name));
+                                 SetValue(member_ThisIter, ara, this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name));
                             }
                             else if (value_thisIter.GetType() == typeof(int))
                             {
-                                field_thisIter.SetValue(ara, Convert.ToInt32(Math.Ceiling(this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name))));
+                                 SetValue(member_ThisIter, ara, Convert.ToInt32(Math.Ceiling(this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name))));
                             }
                             else if (value_thisIter.GetType() == typeof(bool))
                             {
-                                field_thisIter.SetValue(ara, Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name), 0.0f, 1.0f))));
+                                 SetValue(member_ThisIter, ara, Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block] * this.GetBuffAverage(block.name) + this.GetBuffAddAverage(block.name), 0.0f, 1.0f))));
                             }
-                            //BuffBlocks.logger.Trace("FFW! Update To " + field_thisIter.GetValue(ara));
+                            BuffBlocks.logger.Trace("FFW! Update To " +  GetValue(member_ThisIter, ara));
                         }
                         else if (request == "CLEAN")
                         {
-                            //Console.Write("15 ");
-                            //BuffBlocks.logger.Trace("FFW! Clean From " + field_thisIter.GetValue(ara));
+                            BuffBlocks.logger.Trace("FFW! Clean From " +  GetValue(member_ThisIter, ara));
+                            object valueSetTo = null;
                             if (value_thisIter.GetType() == typeof(float))
                             {
-                                field_thisIter.SetValue(ara, this.effectMemory[block]);
+                                valueSetTo = this.effectMemory[block];
+                                SetValue(member_ThisIter, ara, valueSetTo);
                             }
                             else if (value_thisIter.GetType() == typeof(int))
                             {
-                                field_thisIter.SetValue(ara, Convert.ToInt32(Math.Ceiling(this.effectMemory[block])));
+                                valueSetTo = Convert.ToInt32(Math.Ceiling(this.effectMemory[block]));
+                                SetValue(member_ThisIter, ara, valueSetTo);
                             }
                             else if (value_thisIter.GetType() == typeof(bool))
                             {
-                                field_thisIter.SetValue(ara, Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block], 0.0f, 1.0f))));
+                                valueSetTo = Convert.ToBoolean(Math.Round(BuffControllerMk2.Clamp(this.effectMemory[block], 0.0f, 1.0f)));
+                                SetValue(member_ThisIter, ara, valueSetTo);
                             }
-                            //BuffBlocks.logger.Trace("FFW! Clean To " + field_thisIter.GetValue(ara));
+                            BuffBlocks.logger.Trace("FFW! Clean To " + valueSetTo);
                         }
                     }
                 }
@@ -179,7 +265,7 @@ namespace FFW_TT_BuffBlock
                 if (structWarningObj != null)
                 {
                     //Console.Write("17 ");
-                    structWarningField.SetValue(structWarningParent, structWarningObj);
+                    SetValue(structWarningMember, structWarningParent, structWarningObj);
                 }
                 //Console.Write("18 ");
                 if (request == "CLEAN")
@@ -265,6 +351,5 @@ namespace FFW_TT_BuffBlock
         {
             this.effectBuffBlocks.Remove(buff);
         }
-
     }
 }

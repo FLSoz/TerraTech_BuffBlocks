@@ -76,6 +76,12 @@
   <ItemGroup>
     <Compile Include="Mk2\ModuleBuffMk2.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BlockChangePatcher\BlockChangePatcher.csproj">
+      <Project>{251b510b-9656-4b9e-846a-d3508b618f14}</Project>
+      <Name>BlockChangePatcher</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>del *.pdb
