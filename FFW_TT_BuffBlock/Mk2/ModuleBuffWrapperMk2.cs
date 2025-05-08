@@ -29,7 +29,7 @@ namespace FFW_TT_BuffBlock
         }
 
         internal void PrintDetails() {
-            BuffBlocks.logger.Debug($"Added ModuleBuffWrapperMk2 to block {base.block.name}");
+            BuffBlocks.logger.Debug($"Added ModuleBuffWrapperMk2 to block {base.name}");
         }
     }
 }

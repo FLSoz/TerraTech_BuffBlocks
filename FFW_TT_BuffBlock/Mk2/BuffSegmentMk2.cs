@@ -208,6 +208,7 @@ namespace FFW_TT_BuffBlock
                         object value_thisIter =  GetValue(member_ThisIter, ara);
                         if (request == "SAVE")
                         {
+                            BuffBlocks.logger.Trace("FFW! Saving " + value_thisIter);
                             if (value_thisIter.GetType() == typeof(float))
                             {
                                 this.effectMemory[block] = (float)value_thisIter;
